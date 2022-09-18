@@ -50,17 +50,26 @@ function float(it){
   return parseFloat(it, 10);
 }
 
-function identify(inputFile, callback){
+function identify(inputFile, options = false, callback){
   var results = {}
     , batch = new Batch()
-
-  soxInfo('-t', function(value) { results.format        = value; });
-  soxInfo('-r', function(value) { results.sampleRate    = value; });
-  soxInfo('-c', function(value) { results.channelCount  = value; });
-  soxInfo('-s', function(value) { results.sampleCount   = value; });
-  soxInfo('-D', function(value) { results.duration      = value; });
-  soxInfo('-B', function(value) { results.bitRate       = value; });
-
+  var self = this;
+  console.log(options)
+  if (options && options.isRaw) {
+    results.format = 'raw';
+    results.sampleCount = '8000';
+    results.channelCount = '1';
+    results.bitRate = '16';
+  } else {
+    soxInfo('-t', function(value) { results.format        = value; });
+    soxInfo('-r', function(value) { results.sampleRate    = value; });
+    soxInfo('-c', function(value) { results.channelCount  = value; });
+    soxInfo('-s', function(value) { results.sampleCount   = value; });
+    soxInfo('-D', function(value) { results.duration      = value; });
+    soxInfo('-B', function(value) { results.bitRate       = value; });
+  }
+  
+  
   batch.end(function(err) {
     if (err) return callback(err);
     for (var k in conversions) {
@@ -99,24 +108,29 @@ function Transcode(inputFile, outputFile, options) {
   if (this.options.format === 'mp3') {
     this.options.compressionQuality = this.options.compressionQuality || 5;
   }
+  this.options.isRaw = this.options.isRaw || false;
 }
 
 util.inherits(Transcode, EventEmitter);
 
 Transcode.prototype.start = function() {
   var self = this;
-  identify(this.inputFile, function(err, src) {
+  identify(this.inputFile, self.options, function(err, src) {
     if (err) {
       self.emit('error', err);
       return
     }
 
     self.emit('src', src);
-
     var args = [
-      '--guard',
-      '--magic',
-      '--show-progress',
+      // '--guard',
+      // '--magic',
+      // '--show-progress',
+      '-t', 'raw',
+      '-r', self.options.sampleRate,
+      '-b', '16',
+      '-c', '1',
+      '-e', 'signed-integer',
       self.inputFile,
       '-r', self.options.sampleRate,
       '-t', self.options.format,
@@ -163,7 +177,7 @@ Transcode.prototype.start = function() {
         err.args = args;
         self.emit('error', err);
       } else {
-        identify(self.outputFile, function(err, dest) {
+        identify(self.outputFile, self.options, function(err, dest) {
           if (err) {
             self.emit('error', err);
           } else {
