@@ -54,7 +54,6 @@ function identify(inputFile, options = false, callback){
   var results = {}
     , batch = new Batch()
   var self = this;
-  console.log(options)
   if (options && options.isRaw) {
     results.format = 'raw';
     results.sampleCount = '8000';
@@ -122,23 +121,41 @@ Transcode.prototype.start = function() {
     }
 
     self.emit('src', src);
-    var args = [
-      // '--guard',
-      // '--magic',
-      // '--show-progress',
-      '-t', 'raw',
-      '-r', self.options.sampleRate,
-      '-b', '16',
-      '-c', '1',
-      '-e', 'signed-integer',
-      self.inputFile,
-      '-r', self.options.sampleRate,
-      '-t', self.options.format,
-      '-C', Math.round(self.options.bitRate / 1024) +
-            self.options.compressionQuality,
-      '-c', self.options.channelCount,
-      self.outputFile
-    ];
+    if (self.options.isRaw) {
+      var args = [
+        // '--guard',
+        // '--magic',
+        // '--show-progress',
+        '-t', 'raw',
+        '-r', '8000',
+        '-b', '16',
+        '-c', '1',
+        '-e', 'signed-integer',
+        self.inputFile,
+        '-r', self.options.sampleRate,
+        '-t', self.options.format,
+        '-C', Math.round(self.options.bitRate / 1024) +
+              self.options.compressionQuality,
+        '-c', self.options.channelCount,
+        self.outputFile
+      ];
+    } else if (self.options.stt) {
+      var args = [
+        self.inputFile,
+        self.outputFile
+      ];
+    } else {
+      var args = [
+        self.inputFile,
+        '-r', self.options.sampleRate,
+        '-t', self.options.format,
+        '-C', Math.round(self.options.bitRate / 1024) +
+              self.options.compressionQuality,
+        '-c', self.options.channelCount,
+        self.outputFile
+      ];
+    }
+    
     var bin = childProcess.spawn('sox', args);
     var stdout = "";
     bin.stdout.setEncoding('utf8');
