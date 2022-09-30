@@ -142,6 +142,10 @@ Transcode.prototype.start = function() {
     } else if (self.options.stt) {
       var args = [
         self.inputFile,
+        '-r', self.options.sampleRate,
+        '-t', self.options.format,
+        '-C', '1',
+        '-c', self.options.channelCount,
         self.outputFile
       ];
     } else {
