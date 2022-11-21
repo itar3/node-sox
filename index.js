@@ -124,19 +124,19 @@ Transcode.prototype.start = function() {
     if (self.options.isRaw) {
       var args = [
         // '--guard',
-        // '--magic',
         // '--show-progress',
         '-t', 'raw',
-        '-r', '8000',
-        '-b', '16',
-        '-c', '1',
-        '-e', 'signed-integer',
-        self.inputFile,
         '-r', self.options.sampleRate,
-        '-t', self.options.format,
-        '-C', Math.round(self.options.bitRate / 1024) +
-              self.options.compressionQuality,
-        '-c', self.options.channelCount,
+        '-b', '16',
+        '-e', 'signed-integer',
+        '-c', '1',
+        self.inputFile,
+        // '-r', self.options.sampleRate,
+        // '-t', self.options.format,
+        // '-C', Math.round(self.options.bitRate / 1024) +
+        //       self.options.compressionQuality,
+        // '-c', self.options.channelCount,
+
         self.outputFile
       ];
     } else if (self.options.stt) {
